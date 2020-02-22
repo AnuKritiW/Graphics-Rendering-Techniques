@@ -181,6 +181,8 @@ void drawBrickCube()
 
         ecPerturbedNormal.z = ecPerturbedNormal.z * DeltaNormal_Z_Scale;
 
+        vec3 texColor = texture(BrickDiffuseMap, texCoords).rgb;
+
         //===========================
 
         vec3 reflectVec = reflect(-lightVec, ecPerturbedNormal);
