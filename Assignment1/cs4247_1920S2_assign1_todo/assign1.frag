@@ -240,11 +240,41 @@ void drawWoodenCube()
         //    -- Write computed fragment color to FragColor.
         /////////////////////////////////////////////////////////////////////////////
 
+        vec2 texCoords = vec2(v2fTexCoord);
+
+        vec2 c = MirrorTileDensity * texCoords.st;
+        vec2 p = fract( c ) - vec2( 0.5 );
+        float sqrDist = p.x * p.x + p.y * p.y;
+
+         vec3 reflectColor;
+
+        //if outside the bump
+        if (sqrDist >= pow(MirrorRadius, 2)) {
+            p = vec2(0.0);
+        } else {
+            vec3 T1;
+            vec3 B1;
+            compute_tangent_vectors(necNormal, ecPosition, texCoords, T1, B1);
+
+            vec3 tanPerturbedNormal = normalize( vec3(p.x, p.y, 1.0));
+
+            vec3 ecPerturbedNormal = tanPerturbedNormal.x * T1 +
+                                     tanPerturbedNormal.y * B1 +
+                                     tanPerturbedNormal.z * necNormal;
+
+            vec3 reflectVec = reflect(viewVec, ecPerturbedNormal);
+
+            //float R_dot_V = max(0.0, dot(reflectVec, viewVec));
+
+            reflectColor = vec3(texture(EnvMap, reflectVec));
+
+        }
+
         ///////////////////////////////////
         // TASK 3: WRITE YOUR CODE HERE. //
         ///////////////////////////////////
 
-        FragColor = vec4(0.0, 0.0, 1.0, 1.0);  // Replace this with your code.
+        FragColor = vec4(reflectColor, 1.0);  // Replace this with your code.
     }
     else discard;
 }
