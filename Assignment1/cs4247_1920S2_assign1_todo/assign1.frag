@@ -160,11 +160,50 @@ void drawBrickCube()
         // * Write computed fragment color to FragColor.
         /////////////////////////////////////////////////////////////////////////////
 
+        vec3 T1;
+        vec3 B1;
+        vec2 texCoords = vec2(v2fTexCoord);
+        compute_tangent_vectors(necNormal, ecPosition, texCoords, T1, B1);
+
+        // The brick normal map whose color is used as perturbed normal vector
+        // in the tangent space.
+
+        vec3 texNormal = texture(BrickNormalMap, texCoords).rgb;
+
+        // perturbed normals is in tangent space (?)
+        vec3 normal = normalize(texNormal * 2.0 - 1.0);
+
+        vec3 ecPerturbedNormal = normal.x * T1 + normal.y * B1 + normal.z * necNormal;
+        
+        // DeltaNormal_Z_Scale is used to exaggerate the height of bump when doing
+        // normal mapping. The z component of the decoded perturbed normal vector
+        // read from the normal map is multiplied by DeltaNormal_Z_Adj.
+
+        ecPerturbedNormal.z = ecPerturbedNormal.z * DeltaNormal_Z_Scale;
+
+          // The brick texture map whose color is used as the ambient and diffuse
+        // material in the lighting computation.
+
+        vec3 texColor = texture(BrickDiffuseMap, texCoords).rgb;
+
+        vec3 ambient = 0.5 * texColor; //og: 0.1
+
+        float diff = max(0.0, dot(lightVec, ecPerturbedNormal));
+
+        vec3 diffuse = diff * texColor;
+
+        vec3 reflectVec = reflect(-lightVec, ecPerturbedNormal);
+        vec3 halfwayVec = normalize(lightVec + viewVec);
+        float spec = pow(max(0.0, dot(ecPerturbedNormal, halfwayVec)), 32.0);
+
+        vec3 specular = vec3(0.2) * spec;
+        FragColor = vec4(ambient + diffuse + specular, 1.0);
+
         ///////////////////////////////////
         // TASK 2: WRITE YOUR CODE HERE. //
         ///////////////////////////////////
 
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0);  // Replace this with your code.
+        // FragColor = vec4(1.0, 0.0, 0.0, 1.0);  // Replace this with your code.
     }
     else discard;
 }
