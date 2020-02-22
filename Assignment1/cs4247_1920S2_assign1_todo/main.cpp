@@ -313,7 +313,10 @@ static void MyDrawFunc(void)
     /////////////////////////////////////////////////////////////////////////////
 
     glm::mat4 modelMat0 = glm::mat4(1.0f);
-
+    modelMat0 = glm::scale(modelMat0, glm::vec3(skyboxSize, skyboxSize, skyboxSize));
+    glm::mat4 viewMat_tmp = viewMat;
+    viewMat = glm::mat4(glm::mat3(viewMat));
+    
     ///////////////////////////////////
     // TASK 1: WRITE YOUR CODE HERE. //
     ///////////////////////////////////
