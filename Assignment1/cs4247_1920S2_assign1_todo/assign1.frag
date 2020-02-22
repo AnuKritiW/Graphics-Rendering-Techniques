@@ -181,23 +181,19 @@ void drawBrickCube()
 
         ecPerturbedNormal.z = ecPerturbedNormal.z * DeltaNormal_Z_Scale;
 
-          // The brick texture map whose color is used as the ambient and diffuse
-        // material in the lighting computation.
-
-        vec3 texColor = texture(BrickDiffuseMap, texCoords).rgb;
-
-        vec3 ambient = 0.5 * texColor; //og: 0.1
-
-        float diff = max(0.0, dot(lightVec, ecPerturbedNormal));
-
-        vec3 diffuse = diff * texColor;
+        //===========================
 
         vec3 reflectVec = reflect(-lightVec, ecPerturbedNormal);
-        vec3 halfwayVec = normalize(lightVec + viewVec);
-        float spec = pow(max(0.0, dot(ecPerturbedNormal, halfwayVec)), 32.0);
 
-        vec3 specular = vec3(0.2) * spec;
-        FragColor = vec4(ambient + diffuse + specular, 1.0);
+        float N_dot_L = max(0.0, dot(ecPerturbedNormal, lightVec));
+        float R_dot_V = max(0.0, dot(reflectVec, viewVec));
+
+        float spec = (R_dot_V == 0.0) ? 0.0 : pow(R_dot_V, MatlShininess);
+
+        vec3 mixedColor = LightAmbient.rgb * texColor * N_dot_L * 1.5 +
+                     LightSpecular.rgb * spec + LightDiffuse.rgb * texColor;
+
+        FragColor = vec4(mixedColor, 1.0);
 
         ///////////////////////////////////
         // TASK 2: WRITE YOUR CODE HERE. //
